@@ -56,6 +56,8 @@ export default function CalendarioPage() {
         const data = new Date(anoAtual, mesAtual, dia);
         const diaSemana = data.getDay();
 
+        const dataStr = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+
         let deveSortear = false;
 
         if (mesAtual === 0 && dia === 1) {
@@ -72,7 +74,7 @@ export default function CalendarioPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            data: data.toISOString().split('T')[0],
+            data: dataStr,
             ano: anoAtual,
             mes: mesAtual
           })
@@ -127,6 +129,11 @@ export default function CalendarioPage() {
 
   const diasMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
   const escalasMap = new Map(escalas.map(e => [e.data, e]));
+
+  const escalasOrdenadas = [...escalas].sort((a, b) => a.data.localeCompare(b.data));
+
+  const formatarData = (dataStr: string) =>
+    new Intl.DateTimeFormat('pt-BR').format(new Date(`${dataStr}T00:00:00`));
 
   const nomeMes = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(
     new Date(anoAtual, mesAtual)
@@ -199,7 +206,7 @@ export default function CalendarioPage() {
             {Array.from({ length: diasMes }).map((_, i) => {
               const dia = i + 1;
               const data = new Date(anoAtual, mesAtual, dia);
-              const dataStr = data.toISOString().split('T')[0];
+              const dataStr = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
               const escala = escalasMap.get(dataStr);
               const voluntario = escala ? obterVoluntario(escala.voluntario_id) : null;
 
@@ -263,12 +270,12 @@ export default function CalendarioPage() {
                     </td>
                   </tr>
                 ) : (
-                  escalas.map((escala) => {
+                  escalasOrdenadas.map((escala) => {
                     const vol = obterVoluntario(escala.voluntario_id);
                     return (
                       <tr key={escala.id} className="border-t border-white/5 hover:bg-white/5 transition">
                         <td className="px-4 sm:px-6 py-3 text-white text-sm">
-                          {new Intl.DateTimeFormat('pt-BR').format(new Date(escala.data))}
+                          {formatarData(escala.data)}
                         </td>
                         <td className="px-4 sm:px-6 py-3 font-semibold text-cyan-300 text-sm">
                           {modoEdicao ? (
