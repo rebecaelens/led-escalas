@@ -18,7 +18,7 @@ export default function Home() {
               Escala de Voluntários
             </h2>
             <p className="text-base sm:text-xl text-gray-300 max-w-2xl mx-auto px-4">
-              Sistema inteligente e justo para organizar voluntários da sua igreja
+              Sistema inteligente e justo para organizar voluntários
             </p>
           </div>
 
@@ -62,12 +62,6 @@ export default function Home() {
                 <span className="flex-shrink-0 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-sm sm:text-base font-bold">3</span>
                 <div className="text-sm sm:text-base">
                   <strong className="text-cyan-400">Faça o sorteio:</strong> Use o sorteio automático para preencher a escala
-                </div>
-              </li>
-              <li className="flex gap-3 sm:gap-4">
-                <span className="flex-shrink-0 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-sm sm:text-base font-bold">4</span>
-                <div className="text-sm sm:text-base">
-                  <strong className="text-cyan-400">Exporte ou imprima:</strong> Baixe a escala em PDF para compartilhar
                 </div>
               </li>
             </ol>
