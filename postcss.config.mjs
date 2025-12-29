@@ -1,6 +1,11 @@
 const config = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    "@tailwindcss/postcss": {
+      corePlugins: {
+        colorOpacity: false,
+      },
+      supports: false,
+    },
   },
 };
 
