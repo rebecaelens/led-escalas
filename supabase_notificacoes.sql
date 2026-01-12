@@ -13,11 +13,9 @@ CREATE TABLE IF NOT EXISTS notificacoes (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Criar índice para melhor performance ao filtrar por lida
-CREATE INDEX idx_notificacoes_lida ON notificacoes(lida);
+CREATE INDEX IF NOT EXISTS idx_notificacoes_lida ON notificacoes(lida);
 
--- Criar índice para melhor performance ao ordenar por data
-CREATE INDEX idx_notificacoes_criada_em ON notificacoes(criada_em DESC);
+CREATE INDEX IF NOT EXISTS idx_notificacoes_criada_em ON notificacoes(criada_em DESC);
 
 -- Ativar Row Level Security
 ALTER TABLE notificacoes ENABLE ROW LEVEL SECURITY;

@@ -30,9 +30,9 @@ CREATE TABLE notificacoes (
   atualizada_em TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Índices para melhor performance
-CREATE INDEX idx_notificacoes_lida ON notificacoes(lida);
-CREATE INDEX idx_notificacoes_criada_em ON notificacoes(criada_em DESC);
+-- Índices para melhor performance (idempotentes)
+CREATE INDEX IF NOT EXISTS idx_notificacoes_lida ON notificacoes(lida);
+CREATE INDEX IF NOT EXISTS idx_notificacoes_criada_em ON notificacoes(criada_em DESC);
 
 -- Tabela de Escalas
 CREATE TABLE escalas (
