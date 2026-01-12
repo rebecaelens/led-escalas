@@ -8,12 +8,43 @@ export async function DELETE(
   try {
     const { id } = await params;
 
+    // Buscar nome do voluntário antes de deletar
+    const { data: voluntarioData } = await supabase
+      .from('voluntarios')
+      .select('nome')
+      .eq('id', id)
+      .single();
+
     const { error } = await supabase
       .from('voluntarios')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
+
+    // Criar notificação
+    await supabase
+      .from('notificacoes')
+      .insert({
+        tipo: 'info',
+        titulo: 'Voluntário Atualizado',
+        mensagem: `${nome} foi atualizado com sucesso`,
+        lida: false,
+        criada_em: new Date().toISOString()
+      });
+
+    // Criar notificação
+    if (voluntarioData?.nome) {
+      await supabase
+        .from('notificacoes')
+        .insert({
+          tipo: 'erro',
+          titulo: 'Voluntário Removido',
+          mensagem: `${voluntarioData.nome} foi removido do sistema`,
+          lida: false,
+          criada_em: new Date().toISOString()
+        });
+    }
 
     return NextResponse.json({ sucesso: true });
   } catch (erro) {

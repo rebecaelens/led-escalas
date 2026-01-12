@@ -19,6 +19,21 @@ CREATE TABLE restricoes (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Tabela de Notificações
+CREATE TABLE notificacoes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tipo TEXT NOT NULL CHECK (tipo IN ('sucesso', 'erro', 'info', 'aviso')),
+  titulo TEXT NOT NULL,
+  mensagem TEXT NOT NULL,
+  lida BOOLEAN DEFAULT FALSE,
+  criada_em TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  atualizada_em TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Índices para melhor performance
+CREATE INDEX idx_notificacoes_lida ON notificacoes(lida);
+CREATE INDEX idx_notificacoes_criada_em ON notificacoes(criada_em DESC);
+
 -- Tabela de Escalas
 CREATE TABLE escalas (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

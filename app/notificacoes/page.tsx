@@ -9,7 +9,7 @@ interface Notificacao {
   tipo: 'sucesso' | 'erro' | 'info' | 'aviso';
   titulo: string;
   mensagem: string;
-  data: Date;
+  criada_em: string;
   lida: boolean;
 }
 
@@ -18,76 +18,61 @@ export default function NotificacoesPage() {
   const [mostrarToast, setMostrarToast] = useState(false);
   const [toastMensagem, setToastMensagem] = useState('');
   const [filtro, setFiltro] = useState<'todas' | 'nao-lidas'>('todas');
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    // Carregar notificações do localStorage
-    const notif = localStorage.getItem('notificacoes');
-    if (notif) {
-      setNotificacoes(JSON.parse(notif).map((n: any) => ({
-        ...n,
-        data: new Date(n.data)
-      })));
-    } else {
-      // Notificações de exemplo
-      const exemplos: Notificacao[] = [
-        {
-          id: '1',
-          tipo: 'sucesso',
-          titulo: 'Escala Criada',
-          mensagem: 'Nova escala para janeiro foi criada com sucesso!',
-          data: new Date(),
-          lida: false
-        },
-        {
-          id: '2',
-          tipo: 'info',
-          titulo: 'Voluntário Adicionado',
-          mensagem: 'João Silva foi adicionado ao calendário de 15/01/2026',
-          data: new Date(Date.now() - 3600000),
-          lida: false
-        },
-        {
-          id: '3',
-          tipo: 'aviso',
-          titulo: 'Sem Voluntários',
-          mensagem: 'Alguns dias do calendário ainda não possuem voluntários designados',
-          data: new Date(Date.now() - 7200000),
-          lida: true
-        }
-      ];
-      setNotificacoes(exemplos);
-      localStorage.setItem('notificacoes', JSON.stringify(exemplos));
-    }
+    carregarNotificacoes();
+    // Atualizar a cada 5 segundos
+    const interval = setInterval(carregarNotificacoes, 5000);
+    return () => clearInterval(interval);
   }, []);
 
+  async function carregarNotificacoes() {
+    try {
+      const res = await fetch('/api/notificacoes');
+      if (res.ok) {
+        const data = await res.json();
+        setNotificacoes(data.notificacoes || []);
+      }
+    } catch (erro) {
+      console.error('Erro ao carregar notificações:', erro);
+    } finally {
+      setCarregando(false);
+    }
+  }
+
   function marcarComoLida(id: string) {
-    const atualizado = notificacoes.map(n =>
-      n.id === id ? { ...n, lida: true } : n
-    );
-    setNotificacoes(atualizado);
-    localStorage.setItem('notificacoes', JSON.stringify(atualizado));
+    fetch('/api/notificacoes', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, lida: true })
+    }).then(() => carregarNotificacoes());
   }
 
   function deletarNotificacao(id: string) {
-    const atualizado = notificacoes.filter(n => n.id !== id);
-    setNotificacoes(atualizado);
-    localStorage.setItem('notificacoes', JSON.stringify(atualizado));
+    fetch(`/api/notificacoes?id=${id}`, { method: 'DELETE' })
+      .then(() => carregarNotificacoes())
+      .then(() => mostrarMensagem('Notificação removida'));
     mostrarMensagem('Notificação removida');
   }
 
   function deletarTodas() {
-    if (confirm('Tem certeza que deseja deletar todas as notificações?')) {
-      setNotificacoes([]);
-      localStorage.removeItem('notificacoes');
-      mostrarMensagem('Todas as notificações foram removidas');
+    if (confirm('Tem certeza que deseja deletar TODAS as notificações do banco de dados?')) {
+      fetch('/api/notificacoes', { method: 'DELETE' })
+        .then(() => carregarNotificacoes())
+        .then(() => mostrarMensagem('Todas as notificações foram removidas'));
     }
   }
 
   function marcarTodasComoLidas() {
-    const atualizado = notificacoes.map(n => ({ ...n, lida: true }));
-    setNotificacoes(atualizado);
-    localStorage.setItem('notificacoes', JSON.stringify(atualizado));
-    mostrarMensagem('Todas as notificações marcadas como lidas');
+    Promise.all(notificacoes.map(n =>
+      fetch('/api/notificacoes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: n.id, lida: true })
+      })
+    )).then(() => carregarNotificacoes())
+      .then(() => mostrarMensagem('Todas as notificações marcadas como lidas'));
   }
 
   function mostrarMensagem(msg: string) {
@@ -147,6 +132,21 @@ export default function NotificacoesPage() {
             </div>
           </div>
 
+  if (carregando) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
+          <p className="text-white text-lg">Carregando notificações...</p>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-4 sm:p-6">
           {/* Toast */}
           {mostrarToast && (
             <div className="mb-6 p-4 rounded-lg bg-green-500/20 border border-green-500/50 text-green-300 flex items-center gap-2 animate-pulse">
@@ -220,9 +220,10 @@ export default function NotificacoesPage() {
                       <h3 className="font-semibold text-white">{notif.titulo}</h3>
                       <p className="text-gray-300 text-sm mt-1">{notif.mensagem}</p>
                       <p className="text-xs text-gray-500 mt-2">
-                        {notif.data.toLocaleString('pt-BR')}
+                        {new Date(notif.criada_em).toLocaleString('pt-BR')}
                       </p>
                     </div>
+                .sort((a, b) => new Date(b.criada_em).getTime() - new Date(a.criada_em).getTime())
 
                     <div className="flex gap-2 flex-shrink-0">
                       {!notif.lida && (

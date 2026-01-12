@@ -29,12 +29,36 @@ export async function POST(req: NextRequest) {
 
       if (errEscala) throw errEscala;
 
+    // Criar notificação
+    await supabase
+      .from('notificacoes')
+      .insert({
+        tipo: 'sucesso',
+        titulo: 'Escala Sorteada',
+        mensagem: `${resultado.voluntario.nome} foi sorteado para ${new Date(data).toLocaleDateString('pt-BR')}`,
+        lida: false,
+        criada_em: new Date().toISOString()
+      });
+
       // Buscar voluntário para retornar
       const { data: vol } = await supabase
         .from('voluntarios')
         .select('*')
         .eq('id', voluntario_id)
         .single();
+
+      // Criar notificação
+      if (vol?.nome) {
+        await supabase
+          .from('notificacoes')
+          .insert({
+            tipo: 'sucesso',
+            titulo: 'Escala Criada',
+            mensagem: `${vol.nome} foi escalado para ${new Date(data).toLocaleDateString('pt-BR')}`,
+            lida: false,
+            criada_em: new Date().toISOString()
+          });
+      }
 
       return NextResponse.json({
         sucesso: true,

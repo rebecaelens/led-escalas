@@ -25,6 +25,17 @@ export async function POST(req: NextRequest) {
 
     if (error) throw error;
 
+    // Criar notificação
+    await supabase
+      .from('notificacoes')
+      .insert({
+        tipo: 'sucesso',
+        titulo: 'Novo Voluntário',
+        mensagem: `${nome} foi adicionado ao sistema`,
+        lida: false,
+        criada_em: new Date().toISOString()
+      });
+
     return NextResponse.json({ voluntario: data }, { status: 201 });
   } catch (erro) {
     console.error('Erro ao criar voluntário:', erro);
