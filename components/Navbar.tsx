@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Users, Calendar, BarChart3, Settings, Bell, Ban, Clock, Palette } from 'lucide-react';
+import { Menu, X, Home, Users, Calendar, BarChart3, Settings, Bell, Ban, Clock, Palette, Building2, TrendingUp } from 'lucide-react';
 
 export function Navbar() {
   const [menuAberto, setMenuAberto] = useState(false);
@@ -98,6 +98,23 @@ export function Navbar() {
             >
               <Palette size={20} />
               <span>Personalizar</span>
+            </Link>
+            <hr className="border-white/10 my-2" />
+            <Link
+              href="/multi-igreja"
+              onClick={() => setMenuAberto(false)}
+              className="flex items-center gap-3 px-4 py-2 hover:bg-white/10 rounded-lg transition text-white"
+            >
+              <Building2 size={20} />
+              <span>Múltiplas Igrejas</span>
+            </Link>
+            <Link
+              href="/analise"
+              onClick={() => setMenuAberto(false)}
+              className="flex items-center gap-3 px-4 py-2 hover:bg-white/10 rounded-lg transition text-white"
+            >
+              <TrendingUp size={20} />
+              <span>Análise Avançada</span>
             </Link>
           </div>
         )}
