@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Users, Calendar } from 'lucide-react';
+import { Menu, X, Home, Users, Calendar, BarChart3, Settings, Bell } from 'lucide-react';
 
 export function Navbar() {
   const [menuAberto, setMenuAberto] = useState(false);
@@ -49,6 +49,30 @@ export function Navbar() {
             >
               <Calendar size={20} />
               <span>Calendário</span>
+            </Link>
+            <Link
+              href="/dashboard"
+              onClick={() => setMenuAberto(false)}
+              className="flex items-center gap-3 px-4 py-2 hover:bg-white/10 rounded-lg transition text-white"
+            >
+              <BarChart3 size={20} />
+              <span>Dashboard</span>
+            </Link>
+            <Link
+              href="/notificacoes"
+              onClick={() => setMenuAberto(false)}
+              className="flex items-center gap-3 px-4 py-2 hover:bg-white/10 rounded-lg transition text-white"
+            >
+              <Bell size={20} />
+              <span>Notificações</span>
+            </Link>
+            <Link
+              href="/configuracoes"
+              onClick={() => setMenuAberto(false)}
+              className="flex items-center gap-3 px-4 py-2 hover:bg-white/10 rounded-lg transition text-white"
+            >
+              <Settings size={20} />
+              <span>Configurações</span>
             </Link>
           </div>
         )}
