@@ -4,13 +4,43 @@ import { sorteiarVoluntario } from '@/lib/sorteio';
 
 export async function POST(req: NextRequest) {
   try {
-    const { data, ano, mes } = await req.json();
+    const { data, ano, mes, voluntario_id } = await req.json();
 
     if (!data || !ano || mes === undefined) {
       return NextResponse.json(
         { erro: 'Data, ano e mês são obrigatórios' },
         { status: 400 }
       );
+    }
+
+    // Se um voluntário_id foi fornecido, usar esse diretamente
+    if (voluntario_id) {
+      const { data: novaEscala, error: errEscala } = await supabase
+        .from('escalas')
+        .insert({
+          voluntario_id: voluntario_id,
+          data: data,
+          mes: mes,
+          ano: ano,
+          observacoes: 'Adicionado manualmente'
+        })
+        .select()
+        .single();
+
+      if (errEscala) throw errEscala;
+
+      // Buscar voluntário para retornar
+      const { data: vol } = await supabase
+        .from('voluntarios')
+        .select('*')
+        .eq('id', voluntario_id)
+        .single();
+
+      return NextResponse.json({
+        sucesso: true,
+        escala: novaEscala,
+        voluntario: vol
+      });
     }
 
     // Buscar voluntários ativos

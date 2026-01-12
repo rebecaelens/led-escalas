@@ -96,7 +96,7 @@ export default function CalendarioPage() {
   }
 
   function verificarSenha() {
-    if (senha === 'cnm@aracanau26') {
+    if (senha === 'cn@maracanau26') {
       setModoEdicao(true);
       setMostrarModalSenha(false);
       setSenha('');
@@ -107,16 +107,36 @@ export default function CalendarioPage() {
     }
   }
 
-  async function atualizarVoluntario(escalaId: string, novoVoluntarioId: string) {
+  async function atualizarVoluntario(escalaId: string | null, novoVoluntarioId: string, data?: string) {
     try {
-      const res = await fetch(`/api/sorteio/${escalaId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ voluntario_id: novoVoluntarioId })
-      });
+      if (escalaId) {
+        // Atualizar escala existente
+        const res = await fetch(`/api/sorteio/${escalaId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ voluntario_id: novoVoluntarioId })
+        });
 
-      if (res.ok) {
-        await carregarDados();
+        if (res.ok) {
+          await carregarDados();
+        }
+      } else if (data) {
+        // Criar nova escala
+        const [ano, mes, dia] = data.split('-');
+        const res = await fetch('/api/sorteio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: data,
+            ano: parseInt(ano),
+            mes: parseInt(mes) - 1,
+            voluntario_id: novoVoluntarioId
+          })
+        });
+
+        if (res.ok) {
+          await carregarDados();
+        }
       }
     } catch (erro) {
       console.error('Erro ao atualizar escala:', erro);
@@ -237,7 +257,24 @@ export default function CalendarioPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="text-xs text-gray-600">-</div>
+                    <div className="flex-1 flex items-center justify-center">
+                      {modoEdicao ? (
+                        <select
+                          value=""
+                          onChange={(e) => e.target.value && atualizarVoluntario(null, e.target.value, dataStr)}
+                          className="text-[10px] sm:text-xs bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-300 rounded px-1 py-0.5 font-semibold w-full"
+                        >
+                          <option value="">+</option>
+                          {voluntarios.map(v => (
+                            <option key={v.id} value={v.id} className="bg-gray-800 text-white">
+                              {v.nome}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="text-xs text-gray-600">-</div>
+                      )}
+                    </div>
                   )}
                 </div>
               );
