@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Escala, Voluntario } from '@/lib/types';
-import { RotateCcw, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Edit3, Lock, MessageCircle } from 'lucide-react';
+import { RotateCcw, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Edit3, Lock } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 
 export default function CalendarioPage() {
@@ -15,7 +15,6 @@ export default function CalendarioPage() {
   const [modoEdicao, setModoEdicao] = useState(false);
   const [mostrarModalSenha, setMostrarModalSenha] = useState(false);
   const [senha, setSenha] = useState('');
-  const [enviadoEmLote, setEnviadoEmLote] = useState(false);
 
   useEffect(() => {
     carregarDados();
@@ -144,33 +143,6 @@ export default function CalendarioPage() {
     }
   }
 
-  async function notificarPorWhatsApp() {
-    setCarregando(true);
-    try {
-      const res = await fetch('/api/notificacoes/whatsapp', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mes: mesAtual,
-          ano: anoAtual
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        alert(`✅ ${data.enviados} notificações enviadas com sucesso!\n❌ ${data.erros} erro(s)`);
-        setEnviadoEmLote(true);
-      } else {
-        alert('❌ Erro ao enviar notificações');
-      }
-    } catch (erro) {
-      console.error('Erro ao enviar notificações:', erro);
-      alert('❌ Erro ao enviar notificações');
-    } finally {
-      setCarregando(false);
-    }
-  }
-
   function obterVoluntario(voluntarioId: string) {
     return voluntarios.find(v => v.id === voluntarioId);
   }
@@ -225,14 +197,6 @@ export default function CalendarioPage() {
             className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-2.5 px-4 rounded-lg transition-all transform hover:scale-[1.02] disabled:opacity-50"
           >
             <RotateCcw size={18} /> Sorteiar Mês
-          </button>
-          <button
-            onClick={notificarPorWhatsApp}
-            disabled={carregando || escalas.length === 0}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-bold py-2.5 px-4 rounded-lg transition-all transform hover:scale-[1.02] disabled:opacity-50"
-            title="Notificar voluntários via WhatsApp"
-          >
-            <MessageCircle size={18} /> WhatsApp
           </button>
           <button
             onClick={() => setMostrarModalSenha(true)}
