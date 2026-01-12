@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { enviarWhatsApp, gerarMensagemEscala } from '@/lib/whatsapp';
+import { enviarWhatsApp } from '@/lib/whatsapp';
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,20 +38,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Gerar mensagem
-    const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    // Formatar data
     const dataParts = escala.data.split('-');
     const data = new Date(parseInt(dataParts[0]), parseInt(dataParts[1]) - 1, parseInt(dataParts[2]));
-    const dia = diasSemana[data.getDay()];
+    const dataFormatada = data.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit'
+    });
     
-    const mensagem = gerarMensagemEscala(
+    // Enviar notificação
+    const sucesso = await enviarWhatsApp(
+      voluntario.telefone,
       voluntario.nome,
-      escala.data,
-      dia
+      dataFormatada,
+      '09:00'
     );
-
-    // Enviar mensagem
-    const sucesso = await enviarWhatsApp(voluntario.telefone, mensagem);
 
     if (!sucesso) {
       return NextResponse.json(
@@ -105,22 +106,24 @@ export async function PUT(req: NextRequest) {
 
     let enviados = 0;
     let erros = 0;
-    const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
     for (const escala of escalas) {
       if (!escala.voluntario?.telefone) continue;
 
       const dataParts = escala.data.split('-');
       const data = new Date(parseInt(dataParts[0]), parseInt(dataParts[1]) - 1, parseInt(dataParts[2]));
-      const dia = diasSemana[data.getDay()];
+      const dataFormatada = data.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit'
+      });
 
-      const mensagem = gerarMensagemEscala(
+      const sucesso = await enviarWhatsApp(
+        escala.voluntario.telefone,
         escala.voluntario.nome,
-        escala.data,
-        dia
+        dataFormatada,
+        '09:00'
       );
-
-      const sucesso = await enviarWhatsApp(escala.voluntario.telefone, mensagem);
+      
       if (sucesso) {
         enviados++;
       } else {

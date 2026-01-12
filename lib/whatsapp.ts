@@ -2,7 +2,8 @@ import twilio from 'twilio';
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER; // Ex: whatsapp:+5585987654321
+const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER; // Ex: whatsapp:+14155238886
+const contentSid = process.env.TWILIO_CONTENT_SID; // Content template SID
 
 if (!accountSid || !authToken || !whatsappNumber) {
   console.warn('⚠️ Variáveis Twilio não configuradas. WhatsApp desabilitado.');
@@ -12,7 +13,9 @@ const twilioClient = accountSid && authToken ? twilio(accountSid, authToken) : n
 
 export async function enviarWhatsApp(
   numeroDestino: string,
-  mensagem: string
+  nomeVoluntario: string,
+  data: string,
+  hora: string = '09:00'
 ): Promise<boolean> {
   try {
     if (!twilioClient || !whatsappNumber) {
@@ -27,11 +30,27 @@ export async function enviarWhatsApp(
     }
     const whatsappDestino = `whatsapp:+${numeroFormatado}`;
 
-    await twilioClient.messages.create({
-      from: whatsappNumber,
-      to: whatsappDestino,
-      body: mensagem
-    });
+    if (contentSid) {
+      // Usar Content Template
+      await twilioClient.messages.create({
+        from: whatsappNumber,
+        to: whatsappDestino,
+        contentSid: contentSid,
+        contentVariables: JSON.stringify({
+          '1': nomeVoluntario,
+          '2': data,
+          '3': hora
+        })
+      });
+    } else {
+      // Fallback: enviar mensagem simples
+      const mensagem = gerarMensagemEscala(nomeVoluntario, data);
+      await twilioClient.messages.create({
+        from: whatsappNumber,
+        to: whatsappDestino,
+        body: mensagem
+      });
+    }
 
     console.log(`✅ WhatsApp enviado para ${numeroFormatado}`);
     return true;
@@ -43,11 +62,9 @@ export async function enviarWhatsApp(
 
 export function gerarMensagemEscala(
   nome: string,
-  data: string,
-  dia: string
+  data: string
 ): string {
-  const dataFormatada = new Date(data).toLocaleDateString('pt-BR', {
-    weekday: 'long',
+  return `👋 Olá ${nome}!\n\n📅 Você foi escalado para servir em:\n${data}\n\n🙏 Obrigado!\n\nLED Escala`;
     day: '2-digit',
     month: 'long'
   });
